@@ -1,0 +1,43 @@
+export const StaticData = {
+  all_categories: [
+    "backgrounds",
+    "fashion",
+    "nature",
+    "science",
+    "education",
+    "feelings",
+    "health",
+    "people",
+    "religion",
+    "places",
+    "animals",
+    "industry",
+    "computer",
+    "food",
+    "sports",
+    "transportation",
+    "travel",
+    "buildings",
+    "business",
+    "music",
+  ],
+
+};
+export const  StaticFilter= {
+  order: ["popular", "latest"],
+  orientation: ["horizontal", "vertical"],
+  image_type: ["photo", "illustration", "vector"],
+  colors: [
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "turquoise",
+    "blue",
+    "pink",
+    "white",
+    "gray",
+    "black",
+    "brown",
+  ],
+}
