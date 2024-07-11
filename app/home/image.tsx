@@ -26,8 +26,6 @@ const image = () => {
       setIsDownloading(true);
       const { uri } = await FileSystem.downloadAsync(imageUrl, filePath);
       setIsDownloading(false);
-
-      Alert.alert("Downloaded successfully");
       return uri;
     } catch (e: any) {
       console.log(e);
@@ -44,9 +42,11 @@ const image = () => {
     if (uri) {
       await Sharing.shareAsync(uri);
     }
+    else{
+      Alert.alert("Unexpected Error")
+    }
   };
-  // Debouncing the download button click
-  const debouncedDownload = useCallback(debounce(downloadFile, 300), []);
+
   return (
     <Animated.View entering={FadeInUp.delay(100)} style={styles.container}>
       <BlurView
@@ -61,21 +61,6 @@ const image = () => {
           style={styles.image}
         />
         <View style={styles.btnView}>
-          {/* Download */}
-          {!isDownloading ? (
-            <Pressable onPress={debouncedDownload}>
-              <Animated.View
-                entering={FadeInDown.delay(100).springify()}
-                style={styles.btn}
-              >
-                <AntDesign name="arrowdown" size={wp(6)} color="white" />
-              </Animated.View>
-            </Pressable>
-          ) : (
-            <View style={styles.btn}>
-              <ActivityIndicator size={"small"} />
-            </View>
-          )}
           {/* SHare */}
           <Pressable onPress={handleSharing}>
             <Animated.View
@@ -130,7 +115,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 20,
     paddingVertical: 15,
     width: wp(50),
   },

@@ -3,7 +3,7 @@ const BASE_URL: string = `${process.env.EXPO_PUBLIC_API_URL}?key=${process.env.E
 export const formatURI = (params: any) => {
 
 console.log(params, "params")
-  let url = BASE_URL + "&per_page=20&safesearch=true&editors_choise=true";
+  let url = BASE_URL + "&per_page=25&safesearch=true&editors_choise=true";
   if (!params) {
     return url;
   }

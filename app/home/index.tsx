@@ -85,10 +85,6 @@ const Home = () => {
     const bottomPosititon = contentHeight - scrollViewHeight;
 
     if (scrollOffset >= bottomPosititon - 1) {
-      if(initialPageCount?.current == 5){
-        setLastPage(true)
-        return
-      }
       if (!isEndReached) {
         setIsEndReached(true);
         initialPageCount.current = initialPageCount.current + 1
@@ -194,7 +190,7 @@ const Home = () => {
       </View>
       <ScrollView
         onScroll={handleScroll}
-        scrollEventThrottle={8}
+        scrollEventThrottle={400}
         ref={scrollRef}
         contentContainerStyle={{ gap: 15 , flex:1 }}
       >

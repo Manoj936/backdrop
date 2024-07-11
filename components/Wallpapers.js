@@ -1,5 +1,5 @@
 import { View, StyleSheet, Pressable } from "react-native";
-import React from "react";
+import React, { useCallback } from "react";
 import { MasonryFlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
 import { dyanmicHeight, dynamicColumns, hp, wp } from "@/helpers/common";
@@ -24,7 +24,7 @@ const Wallpapers = ({ images, router }) => {
 
 const ImageComponent = ({ item, router }) => {
   
-  openImageModal = ()=>{
+  const openImageModal = ()=>{
     router.push({
       pathname: "/home/image",
       params: {
@@ -32,11 +32,13 @@ const ImageComponent = ({ item, router }) => {
       },
     })
   }
+
+  const debouncedOpenImageModal = useCallback(debounce(openImageModal, 300),[])
   const height = dyanmicHeight(item.imageHeight, item.imageWidth);
   return (
     <View style={styles.container}>
       <Pressable
-        onPress={openImageModal}
+        onPress={debouncedOpenImageModal}
       >
         <Image
           style={[styles.image, { height }]}
