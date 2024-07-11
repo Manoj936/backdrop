@@ -10,7 +10,7 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import { debounce } from "lodash";
 import * as Sharing from "expo-sharing";
-import Toast from 'react-native-toast-message';
+
 const image = () => {
   const router = useRouter();
   const item = useLocalSearchParams();
@@ -27,10 +27,7 @@ const image = () => {
       const { uri } = await FileSystem.downloadAsync(imageUrl, filePath);
       setIsDownloading(false);
 
-      Toast.show({
-        type: 'success',
-        text1: 'Downloaded Successfull! 👍',
-      });
+      Alert.alert("Downloaded successfully");
       return uri;
     } catch (e: any) {
       console.log(e);
@@ -100,7 +97,6 @@ const image = () => {
           </Pressable>
         </View>
       </View>
-      <Toast/>
     </Animated.View>
   );
 };
