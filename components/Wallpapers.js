@@ -1,31 +1,50 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import React from "react";
 import { MasonryFlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
-import { dyanmicHeight, dynamicColumns, wp } from "@/helpers/common";
+import { dyanmicHeight, dynamicColumns, hp, wp } from "@/helpers/common";
 import { theme } from "@/constants/theme";
-const Wallpapers = ({ images }) => {
+import { debounce } from "lodash";
+const Wallpapers = ({ images, router }) => {
   const numColumns = dynamicColumns();
+
   return (
-    <MasonryFlashList
-      data={images}
-      numColumns={numColumns}
-      renderItem={({ item }) => <ImageComponent item={item} />}
-      estimatedItemSize={200}
-    />
+    <View style={{ height: hp(100), width: wp(100) }}>
+      <MasonryFlashList
+        data={images}
+        numColumns={numColumns}
+        renderItem={({ item }) => (
+          <ImageComponent item={item} router={router} />
+        )}
+        estimatedItemSize={200}
+      />
+    </View>
   );
 };
 
-const ImageComponent = ({ item }) => {
+const ImageComponent = ({ item, router }) => {
+  
+  openImageModal = ()=>{
+    router.push({
+      pathname: "/home/image",
+      params: {
+        ...item,
+      },
+    })
+  }
   const height = dyanmicHeight(item.imageHeight, item.imageWidth);
   return (
     <View style={styles.container}>
-      <Image
-        style={[styles.image, { height }]}
-        source={item?.webformatURL}
-        contentFit="cover"
-        transition={1000}
-      />
+      <Pressable
+        onPress={openImageModal}
+      >
+        <Image
+          style={[styles.image, { height }]}
+          source={item?.webformatURL}
+          contentFit="cover"
+          transition={1000}
+        />
+      </Pressable>
     </View>
   );
 };

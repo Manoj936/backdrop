@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, Pressable, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  TextInput,
+  ScrollView,
+} from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { hp, wp } from "@/helpers/common";
@@ -15,8 +22,12 @@ import { getDataUsingAsyncAwaitGetCall } from "@/api";
 import Wallpapers from "@/components/Wallpapers";
 import debounce from "lodash/debounce";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { ActivityIndicator } from "react-native-paper";
+import { useRouter } from "expo-router";
 
 const Home = () => {
+  const initialPageCount = useRef(1)
+  const router = useRouter();
   var pages = { pages: 1 };
   const filterModalView = useRef<BottomSheetModal>(null);
   const { top } = useSafeAreaInsets();
@@ -27,7 +38,13 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const searchRef = useRef<any>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const [isEndReached, setIsEndReached] = useState(false);
+  const [filterdata, setFilterData] = useState({});
+  const [lastPage, setLastPage] =  useState(false);
   const handleChangeCategory = useCallback((title: string) => {
+    initialPageCount.current = 1
+    setLastPage(false)
     setActiveCategory(title);
     clearSearchVal();
     const params: any = { ...pages };
@@ -50,6 +67,7 @@ const Home = () => {
   }, [showfilterModal]);
 
   const fetchImages = async (params: any, refreshMode = false) => {
+    console.log(params);
     const response: any = await getDataUsingAsyncAwaitGetCall(params);
 
     if (response && response.hits) {
@@ -60,11 +78,43 @@ const Home = () => {
       }
     }
   };
+  const handleScroll = (event: any) => {
+    const contentHeight = event.nativeEvent.contentSize.height;
+    const scrollViewHeight = event.nativeEvent.layoutMeasurement.height;
+    const scrollOffset = event.nativeEvent.contentOffset.y;
+    const bottomPosititon = contentHeight - scrollViewHeight;
+
+    if (scrollOffset >= bottomPosititon - 1) {
+      if(initialPageCount?.current == 5){
+        setLastPage(true)
+        return
+      }
+      if (!isEndReached) {
+        setIsEndReached(true);
+        initialPageCount.current = initialPageCount.current + 1
+        let params: any = { pages: initialPageCount.current };
+        if (search && search.length >= 3) {
+          params.q = search.trim();
+        }
+        if (activeCategory) {
+          params.category = activeCategory;
+        }
+        if (filterdata) {
+          params = { ...params, ...filterdata };
+        }
+
+        fetchImages(params, true);
+      }
+    } else if (isEndReached) {
+      setIsEndReached(false);
+    }
+  };
   const handleSearch = (val: string) => {
     console.log("searching for ===>", val);
     setSearch(val);
-    if (val.length > 3) {
+    if (val.length >= 3) {
       setImages([]);
+      
       const params = { ...pages, q: val.trim() };
       console.log("search param", params);
       fetchImages(params);
@@ -78,6 +128,7 @@ const Home = () => {
   const searchWithFilter = (filter: any) => {
     clearSearch();
     filterModalView?.current?.close();
+    setFilterData(filter);
     const params = { ...pages, ...filter };
     if (activeCategory) {
       params.category = activeCategory;
@@ -91,6 +142,15 @@ const Home = () => {
     filterModalView?.current?.close();
   };
 
+  //Scroll to top
+
+  const handleScrollToTop = () => {
+    scrollRef?.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+  };
+
   // Open the bottom filter modal
 
   const manageFilterModal = () => {
@@ -100,6 +160,7 @@ const Home = () => {
     setSearch("");
     searchRef.current.clear();
     setImages([]);
+    initialPageCount.current = 1
   };
   const clearSearch = () => {
     clearSearchVal();
@@ -109,7 +170,7 @@ const Home = () => {
   return (
     <View style={[styles.container, { paddingTop }]}>
       <View style={styles.header}>
-        <Pressable>
+        <Pressable onPress={handleScrollToTop}>
           <Animated.Text
             entering={FadeInLeft.delay(100).springify()}
             style={{
@@ -131,42 +192,64 @@ const Home = () => {
           </Animated.View>
         </Pressable>
       </View>
-      {/* Search bar */}
-      <Animated.View
-        entering={FadeInDown.delay(400).springify()}
-        style={styles.searchBar}
+      <ScrollView
+        onScroll={handleScroll}
+        scrollEventThrottle={8}
+        ref={scrollRef}
+        contentContainerStyle={{ gap: 15 , flex:1 }}
       >
-        <View style={styles.searchIcon}>
-          <Feather name="search" size={24} color={theme.colors.neutral(0.7)} />
-        </View>
-        <TextInput
-          ref={searchRef}
-          onChangeText={debouncedHandleSearch}
-          placeholder="Search..."
-          style={styles.searchText}
-        />
-        {search && (
-          <Pressable style={styles.closeIcon} onPress={clearSearch}>
-            <Ionicons
-              name="close"
+        {/* Search bar */}
+        <Animated.View
+          entering={FadeInDown.delay(400).springify()}
+          style={styles.searchBar}
+        >
+          <View style={styles.searchIcon}>
+            <Feather
+              name="search"
               size={24}
               color={theme.colors.neutral(0.7)}
             />
-          </Pressable>
+          </View>
+          <TextInput
+            ref={searchRef}
+            onChangeText={debouncedHandleSearch}
+            placeholder="Search..."
+            style={styles.searchText}
+          />
+          {search && (
+            <Pressable style={styles.closeIcon} onPress={clearSearch}>
+              <Ionicons
+                name="close"
+                size={24}
+                color={theme.colors.neutral(0.7)}
+              />
+            </Pressable>
+          )}
+        </Animated.View>
+        {/* Category */}
+        <View style={styles.categorySec}>
+          <Category
+            activeCategory={activeCategory}
+            handleChangeCategory={handleChangeCategory}
+          />
+        </View>
+        {images.length == 0 && (
+          <ActivityIndicator size={"large"} color={theme.colors.white} />
         )}
-      </Animated.View>
-      {/* Category */}
-      <View style={styles.categorySec}>
-        <Category
-          activeCategory={activeCategory}
-          handleChangeCategory={handleChangeCategory}
-        />
-      </View>
-      <View style={styles.wallpaperContainer}>
-        <Wallpapers images={images} />
-      </View>
+
+        <View style={styles.wallpaperContainer}>
+          <Wallpapers images={images} router={router} />
+        </View>
+
+        {/* Rendering Wallpapers */}
+      </ScrollView>
+
       {/* Filter Modal */}
-      <FilterModal modalRef={filterModalView} filterSearch={searchWithFilter} closeModal={cancelFilter} />
+      <FilterModal
+        modalRef={filterModalView}
+        filterSearch={searchWithFilter}
+        closeModal={cancelFilter}
+      />
     </View>
   );
 };

@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 const Layout = () => {
   return (
     <>
-      <GestureHandlerRootView style={{flex:1}}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
         <CustomFontProvider>
           <BottomSheetModalProvider>
             <Stack>
@@ -19,6 +19,14 @@ const Layout = () => {
               <Stack.Screen
                 name="home/index"
                 options={{ headerShown: false }}
+              ></Stack.Screen>
+              <Stack.Screen
+                name="home/image"
+                options={{
+                  headerShown: false,
+                  presentation: "containedTransparentModal",
+                  animation: "fade_from_bottom",
+                }}
               ></Stack.Screen>
             </Stack>
           </BottomSheetModalProvider>
