@@ -41,9 +41,8 @@ const image = () => {
     let uri = await downloadFile();
     if (uri) {
       await Sharing.shareAsync(uri);
-    }
-    else{
-      Alert.alert("Unexpected Error")
+    } else {
+      Alert.alert("Unexpected Error");
     }
   };
 
@@ -55,11 +54,15 @@ const image = () => {
         style={StyleSheet.absoluteFill}
       />
       <View style={styles.imageViewer}>
-        {!item.webformatURL && <ActivityIndicator />}
-        <Image
-          source={{ uri: item.webformatURL as string }}
-          style={styles.image}
-        />
+        {item.webformatURL ? (
+          <Image
+            source={{ uri: item.webformatURL as string }}
+            style={styles.image}
+          />
+        ) : (
+          <ActivityIndicator size={"large"} />
+        )}
+
         <View style={styles.btnView}>
           {/* SHare */}
           <Pressable onPress={handleSharing}>

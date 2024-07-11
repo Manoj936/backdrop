@@ -122,7 +122,7 @@ const Home = () => {
 
   //When search filter is applied
   const searchWithFilter = (filter: any) => {
-    clearSearch();
+    clearSearchVal();
     filterModalView?.current?.close();
     setFilterData(filter);
     const params = { ...pages, ...filter };
