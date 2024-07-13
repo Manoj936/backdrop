@@ -6,11 +6,10 @@ import { BlurView } from "expo-blur";
 import { hp, wp } from "@/helpers/common";
 import { theme } from "@/constants/theme";
 import { ActivityIndicator } from "react-native-paper";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Feather, MaterialIcons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
-import { debounce } from "lodash";
 import * as Sharing from "expo-sharing";
-
+import * as MediaLibrary from "expo-media-library";
 const image = () => {
   const router = useRouter();
   const item = useLocalSearchParams();
@@ -20,6 +19,25 @@ const image = () => {
   const imageUrl = item?.webformatURL as string;
   const fileName = previewURL.split("/").pop();
   const filePath = `${FileSystem.documentDirectory}${fileName}`;
+  // Handle saving to gallery
+
+  const saveToGallery = async () => {
+    let uri = await downloadFile();
+    if (uri) {
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      if (permission.granted) {
+        await MediaLibrary.saveToLibraryAsync(uri);
+        Alert.alert("Success", "Image saved to gallery!");
+      } else {
+        Alert.alert(
+          "Permission denied",
+          "Permission to access gallery was denied"
+        );
+      }
+    } else {
+      Alert.alert("Unexpected Error");
+    }
+  };
 
   const downloadFile = async () => {
     try {
@@ -73,7 +91,19 @@ const image = () => {
               <AntDesign name="sharealt" size={wp(6)} color="white" />
             </Animated.View>
           </Pressable>
-
+          {/* Save to Gallery */}
+          <Pressable onPress={saveToGallery}>
+            <Animated.View
+              entering={FadeInDown.delay(150).springify()}
+              style={styles.btn}
+            >
+              {isDownloading ? (
+                <ActivityIndicator size={"small"} />
+              ) : (
+                <Feather name="download" size={wp(6)} color="white" />
+              )}
+            </Animated.View>
+          </Pressable>
           {/* Close */}
           <Pressable onPress={() => router.back()}>
             <Animated.View
