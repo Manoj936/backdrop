@@ -40,11 +40,8 @@ const Home = () => {
   const scrollRef = useRef<any>(null);
   const [isEndReached, setIsEndReached] = useState(false);
   const [filterdata, setFilterData] = useState({});
-  const [lastPage, setLastPage] = useState(false);
   const [showBottomLoader , setShowBottomLoader] = useState(false)
   const handleChangeCategory = useCallback((title: string) => {
-    initialPageCount = 1;
-    setLastPage(false);
     setActiveCategory(title);
     clearSearchVal();
     const params: any = { ...pages };
