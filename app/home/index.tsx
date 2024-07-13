@@ -26,7 +26,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { useRouter } from "expo-router";
 
 const Home = () => {
-  const initialPageCount = useRef(1)
+  const initialPageCount = useRef(1);
   const router = useRouter();
   var pages = { pages: 1 };
   const filterModalView = useRef<BottomSheetModal>(null);
@@ -41,10 +41,10 @@ const Home = () => {
   const scrollRef = useRef<ScrollView>(null);
   const [isEndReached, setIsEndReached] = useState(false);
   const [filterdata, setFilterData] = useState({});
-  const [lastPage, setLastPage] =  useState(false);
+  const [lastPage, setLastPage] = useState(false);
   const handleChangeCategory = useCallback((title: string) => {
-    initialPageCount.current = 1
-    setLastPage(false)
+    initialPageCount.current = 1;
+    setLastPage(false);
     setActiveCategory(title);
     clearSearchVal();
     const params: any = { ...pages };
@@ -87,7 +87,7 @@ const Home = () => {
     if (scrollOffset >= bottomPosititon - 1) {
       if (!isEndReached) {
         setIsEndReached(true);
-        initialPageCount.current = initialPageCount.current + 1
+        initialPageCount.current = initialPageCount.current + 1;
         let params: any = { pages: initialPageCount.current };
         if (search && search.length >= 3) {
           params.q = search.trim();
@@ -110,7 +110,7 @@ const Home = () => {
     setSearch(val);
     if (val.length >= 3) {
       setImages([]);
-      
+
       const params = { ...pages, q: val.trim() };
       console.log("search param", params);
       fetchImages(params);
@@ -156,7 +156,7 @@ const Home = () => {
     setSearch("");
     searchRef.current.clear();
     setImages([]);
-    initialPageCount.current = 1
+    initialPageCount.current = 1;
   };
   const clearSearch = () => {
     clearSearchVal();
@@ -188,40 +188,38 @@ const Home = () => {
           </Animated.View>
         </Pressable>
       </View>
+
+      {/* Search bar */}
+      <Animated.View
+        entering={FadeInDown.delay(400).springify()}
+        style={styles.searchBar}
+      >
+        <View style={styles.searchIcon}>
+          <Feather name="search" size={24} color={theme.colors.neutral(0.7)} />
+        </View>
+        <TextInput
+          ref={searchRef}
+          onChangeText={debouncedHandleSearch}
+          placeholder="Search..."
+          placeholderTextColor={theme.colors.neutral(0.5)} // Change this color to whatever you like
+          style={styles.searchText}
+        />
+        {search && (
+          <Pressable style={styles.closeIcon} onPress={clearSearch}>
+            <Ionicons
+              name="close"
+              size={24}
+              color={theme.colors.neutral(0.7)}
+            />
+          </Pressable>
+        )}
+      </Animated.View>
       <ScrollView
         onScroll={handleScroll}
         scrollEventThrottle={400}
         ref={scrollRef}
-        contentContainerStyle={{ gap: 15 , flex:1 }}
+        contentContainerStyle={{ gap: 15, flex: 1 }}
       >
-        {/* Search bar */}
-        <Animated.View
-          entering={FadeInDown.delay(400).springify()}
-          style={styles.searchBar}
-        >
-          <View style={styles.searchIcon}>
-            <Feather
-              name="search"
-              size={24}
-              color={theme.colors.neutral(0.7)}
-            />
-          </View>
-          <TextInput
-            ref={searchRef}
-            onChangeText={debouncedHandleSearch}
-            placeholder="Search..."
-            style={styles.searchText}
-          />
-          {search && (
-            <Pressable style={styles.closeIcon} onPress={clearSearch}>
-              <Ionicons
-                name="close"
-                size={24}
-                color={theme.colors.neutral(0.7)}
-              />
-            </Pressable>
-          )}
-        </Animated.View>
         {/* Category */}
         <View style={styles.categorySec}>
           <Category
