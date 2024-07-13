@@ -24,9 +24,8 @@ import debounce from "lodash/debounce";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ActivityIndicator } from "react-native-paper";
 import { useRouter } from "expo-router";
-
+var initialPageCount = 1
 const Home = () => {
-  const initialPageCount = useRef(1);
   const router = useRouter();
   var pages = { pages: 1 };
   const filterModalView = useRef<BottomSheetModal>(null);
@@ -38,12 +37,13 @@ const Home = () => {
   const [activeCategory, setActiveCategory] = useState("");
   const [images, setImages] = useState<any[]>([]);
   const searchRef = useRef<any>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<any>(null);
   const [isEndReached, setIsEndReached] = useState(false);
   const [filterdata, setFilterData] = useState({});
   const [lastPage, setLastPage] = useState(false);
+  const [showBottomLoader , setShowBottomLoader] = useState(false)
   const handleChangeCategory = useCallback((title: string) => {
-    initialPageCount.current = 1;
+    initialPageCount = 1;
     setLastPage(false);
     setActiveCategory(title);
     clearSearchVal();
@@ -78,17 +78,22 @@ const Home = () => {
       }
     }
   };
-  const handleScroll = (event: any) => {
+
+  useEffect(()=>{
+console.log(isEndReached , "💀💀💀💀")
+  },[isEndReached])
+  const handleScroll = async (event: any) => {
     const contentHeight = event.nativeEvent.contentSize.height;
     const scrollViewHeight = event.nativeEvent.layoutMeasurement.height;
     const scrollOffset = event.nativeEvent.contentOffset.y;
-    const bottomPosititon = contentHeight - scrollViewHeight;
+    const bottomPosition = contentHeight - scrollViewHeight;
 
-    if (scrollOffset >= bottomPosititon - 1) {
+    if (scrollOffset >= bottomPosition - 1) {
       if (!isEndReached) {
+        setShowBottomLoader(true)
         setIsEndReached(true);
-        initialPageCount.current = initialPageCount.current + 1;
-        let params: any = { pages: initialPageCount.current };
+        initialPageCount++ 
+        let params: any = { pages:initialPageCount  };
         if (search && search.length >= 3) {
           params.q = search.trim();
         }
@@ -98,8 +103,9 @@ const Home = () => {
         if (filterdata) {
           params = { ...params, ...filterdata };
         }
-
-        fetchImages(params, true);
+        
+        await fetchImages(params, true);
+        setShowBottomLoader(false)
       }
     } else if (isEndReached) {
       setIsEndReached(false);
@@ -140,11 +146,9 @@ const Home = () => {
 
   //Scroll to top
 
+  //Scroll to top
   const handleScrollToTop = () => {
-    scrollRef?.current?.scrollTo({
-      y: 0,
-      animated: true,
-    });
+    scrollRef?.current.scrollTo({ y: 0.5, animated: true });
   };
 
   // Open the bottom filter modal
@@ -156,7 +160,7 @@ const Home = () => {
     setSearch("");
     searchRef.current.clear();
     setImages([]);
-    initialPageCount.current = 1;
+    initialPageCount  = 1;
   };
   const clearSearch = () => {
     clearSearchVal();
@@ -172,6 +176,7 @@ const Home = () => {
             style={{
               fontFamily: "Playwrite",
               fontSize: hp(2),
+              fontWeight: "800",
               color: theme.colors.white,
             }}
           >
@@ -214,28 +219,34 @@ const Home = () => {
           </Pressable>
         )}
       </Animated.View>
-      <ScrollView
-        onScroll={handleScroll}
-        scrollEventThrottle={400}
-        ref={scrollRef}
-        contentContainerStyle={{ gap: 15, flex: 1 }}
-      >
-        {/* Category */}
-        <View style={styles.categorySec}>
-          <Category
-            activeCategory={activeCategory}
-            handleChangeCategory={handleChangeCategory}
-          />
-        </View>
-        {images.length == 0 && (
-          <ActivityIndicator size={"large"} color={theme.colors.white} />
-        )}
 
+      {/* Category */}
+      <View style={styles.categorySec}>
+        <Category
+          activeCategory={activeCategory}
+          handleChangeCategory={handleChangeCategory}
+        />
+      </View>
+      <ScrollView
+      showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={5}
+        ref={scrollRef}
+        contentContainerStyle={styles.contentContainer}
+      >
+        {images.length === 0 && (
+          <ActivityIndicator style={{marginVertical:hp(15)}} size={"large"} color={theme.colors.white} />
+        )}
+        {/* Rendering Wallpapers */}
         <View style={styles.wallpaperContainer}>
           <Wallpapers images={images} router={router} />
         </View>
-
-        {/* Rendering Wallpapers */}
+        {
+          showBottomLoader  &&  <View style={styles.bottomLoader}>
+          <ActivityIndicator  size={'small'}  color={theme.colors.white} />
+        </View>
+        } 
+       
       </ScrollView>
 
       {/* Filter Modal */}
@@ -253,6 +264,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.neutral(0.7),
   },
+  contentContainer: {
+    gap: 15,
+  },
+
   header: {
     width: wp(100),
     height: hp(7),
@@ -260,6 +275,12 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  bottomLoader:{
+    display: "flex",
+    justifyContent:'center',
+    alignItems:'center',
+    marginVertical : 10,
   },
   searchBar: {
     display: "flex",
